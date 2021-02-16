@@ -13,8 +13,8 @@ const getTransactions = async () => {
             _unknown_3: trx[3],
             description: trx[4],
             ref: trx[5].replace(/ +/, ' '),
-            roundedAmount: Math.round(parseFloat(trx[6])),
-            amount: trx[6],
+            roundedAmount: trx[6].length > 0 ? -Math.round(parseFloat(trx[6])) : Math.round(parseFloat(trx[7])),
+            amount: trx[6].length > 0 ? -trx[6] : trx[7],
         }
     })
 }

@@ -20,6 +20,10 @@ const main = async () => {
 
     const unclearedDiff = compareUncleared(otpTrxs, ynabTrxs)
     console.log('unclearedDiff', unclearedDiff);
+
+
+    const differentValues = checkValues(otpTrxs, ynabTrxs)
+    console.log('value comparison', differentValues);
     
 }
 
@@ -47,7 +51,7 @@ const compareUncleared = (otpTrxs, ynabTrxs) => {
 
     const otpDiff = otpUncleared.filter((otpTrx) => {
         const trxFound = ynabUncleared.find((ynabTrx) => {
-            return Math.abs(parseInt(ynabTrx.amount))/1000 == otpTrx.roundedAmount
+            return Math.abs(parseInt(ynabTrx.amount))/1000 == Math.abs(otpTrx.roundedAmount)
         })
 
         return !trxFound;
@@ -57,7 +61,7 @@ const compareUncleared = (otpTrxs, ynabTrxs) => {
 
     const ynabDiff = ynabUncleared.filter((ynabTrx) => {
         const trxFound = otpUncleared.find((otpTrx) => {
-            return Math.abs(parseInt(ynabTrx.amount))/1000 == otpTrx.roundedAmount
+            return Math.abs(parseInt(ynabTrx.amount))/1000 == Math.abs(otpTrx.roundedAmount)
         })
         return !trxFound;
     })
@@ -69,6 +73,36 @@ const compareUncleared = (otpTrxs, ynabTrxs) => {
 
     return diff;
 
+
+}
+
+const checkValues = (otpTrxs, ynabTrxs) => {
+
+    const result = [];
+    ynabTrxs.forEach((ynabTrx) => {
+        if(ynabTrx.memo && /\[.*,.*\]/.test(ynabTrx.memo)) {
+           
+            const textBetween = ynabTrx.memo.match(/\[([^)]+)\]/)[1];
+            const trxRefs = textBetween.split(',').map(str => str.trim());
+
+            const finalOtpValue = trxRefs.reduce((acc, trxRef) => {
+                const otpTrx = otpTrxs.find((otpTrx) => {
+                    return otpTrx.ref == trxRef;
+                });
+                return acc + otpTrx.roundedAmount
+            }, 0)
+
+            if(Math.abs(finalOtpValue) !== Math.abs(parseInt(ynabTrx.amount))/1000) {
+                result.push({
+                    memo: ynabTrx.memo,
+                    otpSum: finalOtpValue,
+                    ynab: Math.abs(parseInt(ynabTrx.amount))/1000
+                })
+            }
+        }
+    })
+
+    return result;
 
 }
 
