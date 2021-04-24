@@ -7,3 +7,10 @@ It uses YNAB API together with copy of OTP's JSON response containing a list of 
 Sadly the integration doesn't exist, so for now this helps with data entry into YNAB by showing which transactions haven't been entered or which transactions have been cleared and are not marked as cleared in YNAB. 
 
 The plan is to extend these scripts to update YNAB automatically, taking away all manual work of maintaining the budget.
+
+# Usage
+
+- cp .env.example .env
+- populate .env with your ynab token
+- get the list of otp transactions as json and store them to otpTrxs.json
+- create store.json with an empty json object

@@ -31,7 +31,7 @@ const getBudgets = async () => {
     return res.data.budgets;
 }
 
-const getTransactions = async (budgetId, accId) => {
+const getTransactions = async (budgetId, accId, sinceDate) => {
     const storeKeys = await store.getKeys(`budgets:${budgetId}:accounts:${accId}:transactions:`);
 
     if(storeKeys.length) {
@@ -42,7 +42,7 @@ const getTransactions = async (budgetId, accId) => {
 
     console.log('[api] get trxs')
 
-    const trxs = await ynabAPI.transactions.getTransactionsByAccount(budgetId, accId);
+    const trxs = await ynabAPI.transactions.getTransactionsByAccount(budgetId, accId, sinceDate);
 
     const storeData = store.serializeArr(trxs.data.transactions, 
         (trx) => `budgets:${budgetId}:accounts:${accId}:transactions:${trx.id}`);

@@ -9,9 +9,12 @@ const main = async () => {
 
     const budgetId = await ynab.getBudgetId();
     const accs = await ynab.getAccounts();
-    const ynabTrxs = await ynab.getTransactions(budgetId, accs[0].id)
-
     const otpTrxs = await otp.getTransactions();
+
+    const oldestTrxDate = otp.oldestTransactionDate(otpTrxs)
+    const ynabTrxs = await ynab.getTransactions(budgetId, accs[0].id, oldestTrxDate.toISOString().substring(0,10))
+
+    
 
 
     const refDiff = getRefDiff(otpTrxs, ynabTrxs);
@@ -41,7 +44,8 @@ const getRefDiff = (otpTrxs, ynabTrxs) => {
 
 const compareUncleared = (otpTrxs, ynabTrxs) => {
     const otpUncleared = otpTrxs.filter((otpTrx) => {
-        return otpTrx.valutaDate.includes('.2021 ') && otpTrx.ref == ''
+        // return otpTrx.valutaDate.includes('.2021 ') && otpTrx.ref == ''
+        return otpTrx.ref == ''
     })
 
     const ynabUncleared = ynabTrxs.filter(ynabTrx => ynabTrx.cleared == 'uncleared');
