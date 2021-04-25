@@ -18,8 +18,13 @@ const main = async () => {
 
 
     const refDiff = getRefDiff(otpTrxs, ynabTrxs);
-    console.log('refDiff', refDiff);
 
+
+    const recentlyCleared = getRecentlyCleared(ynabTrxs,refDiff)
+    console.log('recentlyCleared', recentlyCleared);
+
+
+    console.log('refDiff', refDiff);
 
     const unclearedDiff = compareUncleared(otpTrxs, ynabTrxs)
     console.log('unclearedDiff', unclearedDiff);
@@ -33,7 +38,7 @@ const main = async () => {
 
 const getRefDiff = (otpTrxs, ynabTrxs) => {
     return otpTrxs.filter((otpTrx) => {
-        return otpTrx.valutaDate.includes('.2021 ')
+        return !otpTrx.valutaDate.includes('2020') // ignore old trxs before ref entry
     })
     .filter((otpTrx) => {
         const trxFound = ynabTrxs.some((ynabTrx) => ynabTrx.memo && ynabTrx.memo.includes(otpTrx.ref));
@@ -42,9 +47,40 @@ const getRefDiff = (otpTrxs, ynabTrxs) => {
 
 }
 
+
+const getRecentlyCleared = (ynabTrxs, refDiff) => {
+
+    const ynabUncleared = ynabTrxs.filter(ynabTrx => ynabTrx.cleared == 'uncleared');
+    
+    return ynabUncleared.map((ynabTrx) => {
+        const res = {
+            ...ynabTrx,
+            
+        }
+
+        // console.log(`refdiff debug - ${ynabTrx.memo} - ${Math.abs(parseInt(ynabTrx.amount))/1000}}`)
+
+        const matchingRefs = refDiff.filter((otpTrx) => {
+            // console.log(`refdiff debug filter - ${otpTrx.description} - ${Math.abs(otpTrx.roundedAmount)}`)
+            return Math.abs(parseInt(ynabTrx.amount))/1000 == Math.abs(otpTrx.roundedAmount)
+        })
+        .map((otpTrx) => {
+            return `${otpTrx.ref} | ${otpTrx.roundedAmount} | ${otpTrx.description}`
+        })
+
+        if (matchingRefs.length) {
+            res.matchingRefsFromDiff = matchingRefs
+        }
+        return res
+    }).filter((ynabTrx) => {
+        return ynabTrx.matchingRefsFromDiff
+    })
+
+
+}
+
 const compareUncleared = (otpTrxs, ynabTrxs) => {
     const otpUncleared = otpTrxs.filter((otpTrx) => {
-        // return otpTrx.valutaDate.includes('.2021 ') && otpTrx.ref == ''
         return otpTrx.ref == ''
     })
 
